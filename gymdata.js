@@ -333,7 +333,7 @@ function gymData() {
 	{name: "Bücherhalle Farmsen", district: "Farmsen-Berne", address: "Rahlstedter Weg 10", location: [53.605438,10.121239]},
 	{name: "Bücherhalle Horn", district: "Horn", address: "Rhiemsweg 75c", location: [53.559418,10.076674]},
 	{name: "Bücherquelle", district: "Hamm", address: "Carl-Petersen-Straße 99", location: [53.55772,10.050614]},
-	{name: "Bürgerhaus Von 1870 Uetersen", district: "Kreis Pinneberg", address: "Kirchenstraße 18", location: [53.682484,9.654986]},
+	{name: "Bürgerhaus Von 1870 Uetersen", district: "Kreis Pinneberg", address: "Kirchenstraße 18", location: [53.682484,9.654986],deleted: true},
 	{name: "Büros Krähen Weg", district: "Niendorf", address: "Krähenweg 30", location: [53.631779,9.959279]},
 	{name: "Büste Im Schmetterlingspark", district: "Aumühle", address: "Am Schlossteich Insel der Besinnung", location: [53.531239,10.334631], park: "way/181227651"},
 	{name: "Bützflether Freibad", district: "Landkreis Stade", address: "Bützfleth Am Schwimmbad", location: [53.652111,9.469505]},

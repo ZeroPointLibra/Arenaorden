@@ -110,7 +110,7 @@ function makeMap(ex) {
     // L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     L.tileLayer(`https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=${mapboxToken}`, {
         attribution: '© <a href="http://openstreetmap.org">OpenStreetMap</a> | © <a href="http://mapbox.com">Mapbox</a>',
-        minZoom: 12,
+        minZoom: 10,
         maxZoom: 17,
     }).addTo(map);
 

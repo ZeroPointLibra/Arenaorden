@@ -1,10 +1,8 @@
 /*
 Raw gym data - include a different file for different city
-
 NEVER change order of gyms or delete gyms
 ONLY append at the end, and mark deleted gyms with 'deleted: true'
 BECAUSE progress is stored in user's localStorage by gym index
-
 Entries for each gym:
 {
   name: "The Gym Name",                // required
@@ -21,8 +19,8 @@ Entries for each gym:
 */
 
 function gymData() {
-	return {
-	city: "DE-HH", // country-city (used in localStorage key to allow tracking multiple cities)
+    return {
+    city: "DE-MD", // country-city (used in localStorage key to allow tracking multiple cities)
 	gyms: [
 	{name: "100 Jahre Genossenschaft - Gedenkstein", district: "Langenhorn", address: "Theodor-Fahr-Straße 2b", location: [53.666981,10.010437]},
 	{name: "100 Jahre HNT Graffiti", district: "Neugraben-Fischbek", address: "Cuxhavener Straße 253", location: [53.471676,9.872465]},
@@ -1653,5 +1651,63 @@ function gymData() {
 	{name: "Öjendorfer Park Eingang West 3", district: "Billstedt", address: "Barsbütteler Weg", location: [53.560028,10.149643], park: "way/107162022"},
 	{name: "Öjendorfer Schachfelder", district: "Billstedt", address: "Grootmoorredder Minigolf-Anlage Öjendorf", location: [53.552185,10.135262], park: "way/107162022"},
 	{name: "Überwasserrutsche", district: "Wilhelmsburg", address: "Stübenhofer Weg", location: [53.482655,10.01259], park: "way/69658935"},
-	]};
+    //{name: "", district: "", address: "", location: []},
+    ],
+    // local names for Level 12 cells
+    cells: {
+        '47af5f5': 'Zelle 1 (Nördl. Altstadt)',
+        '47a5f5f': 'Zelle 2 (Südl. Altstadt)',
+        '47a5f59': 'Zelle 3 (MD West)',
+        '47af5f7': 'Zelle 4 (Stadtfeld)',
+        '47af5f1': 'Zelle 5 (MD Nordwest)',
+        '47af5f3': 'Zelle 6 (MD Nord)',
+        '47af58d': 'Zelle 7 (MD Nordost)',
+        '47af58b': 'Zelle 8 (Elbauenpark)',
+        '47a5f61': 'Zelle 9 (Rotehornpark)',
+        '47a5f67': 'Zelle 10 (Buckau/Fermersleben)',
+        '47a5f5d': 'Zelle 11 (MD Süd)',
+        '47af5fb': 'Zelle 16 (Olvenstedt)',
+        '47af589': 'Zelle 23 (Elbauenpark Ost)',
+        /*
+        '47af5f5': 'Zelle A-1 (Nördl. Altstadt)',
+        '47a5f5f': 'Zelle A-2 (Südl. Altstadt)',
+        '47a5f59': 'Zelle B-3 (MD West)',
+        '47af5f7': 'Zelle A-4 (Stadtfeld)',
+        '47af5f1': 'Zelle A-5 (MD Nordwest)',
+        '47af5f3': 'Zelle A-6 (MD Nord)',
+        '47af58d': 'Zelle D-7 (MD Nordost)',
+        '47af58b': 'Zelle D-8 (Elbauenpark)',
+        '47a5f61': 'Zelle C-9 (Rotehornpark)',
+        '47a5f67': 'Zelle C-10 (Buckau/Fermersleben)',
+        '47a5f5d': 'Zelle B-11 (MD Süd)',
+        '47af5fb': 'Zelle A-16 (Olvenstedt)',
+        '47af589': 'Zelle D-23 (Elbauenpark Ost)',
+        */
+        '47af5f54': 'Zelle 1a',
+        '47af5f44': 'Zelle 1c',
+        '47af5f4c': 'Zelle 1d',
+        '47a5f5e4': 'Zelle 2a',
+        '47a5f5fc': 'Zelle 2d',
+        '47a5f594': 'Zelle 3a',
+        '47a5f584': 'Zelle 3c',
+        '47af5f14': 'Zelle 5a',
+        '47af5f0c': 'Zelle 5c',
+        '47af5f24': 'Zelle 6c',
+        '47af58c4': 'Zelle 7a',
+        '47af58cc': 'Zelle 7b',
+        '47af58a4': 'Zelle 8a',
+        '47af58ac': 'Zelle 8b',
+        '47af58b4': 'Zelle 8c',
+        '47af58bc': 'Zelle 8d',
+        '47a5f614': 'Zelle 9a',
+        '47a5f60c': 'Zelle 9b',
+        '47a5f604': 'Zelle 9c',
+        '47a5f664': 'Zelle 10a',
+        '47a5f674': 'Zelle 10c',
+        '47a5f5cc': 'Zelle 11b',
+        '47a5f5c4': 'Zelle 11c',
+        '47af5fbc': 'Zelle 16b',
+        '47af5894': 'Zelle 23c',
+    },
+    };
 }

@@ -88,7 +88,6 @@ function makeList() {
                 <a href="https://www.google.com/maps/?q=${gym.location}">${gym.address || 'map'}</a>
                 ${gym.park ? '<br>' : ''}
                 ${typeof gym.park == 'string' ? '[<a href="http://www.openstreetmap.org/' + gym.park + '">EX</a>]' : ''}
-                ${gym.park ? cellName(gym.cell) : ''}
             </div>${gym.exraid ? '<a href="md-exraids.html"><img src="exraid.png" class="exbadge"></a>' : ''}`;
         gym.showLevel = () => {
             gym.badge.src = `gym${gym.levelEx}.png`;
@@ -112,7 +111,7 @@ function makeList() {
                 <img src="gym${gym.park ? 6 : 2}.png" class="badge" width="36" height="48">
                 <img src="gym${gym.park ? 7 : 3}.png" class="badge" width="36" height="48">
                 <br>
-            <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' + cellName(gym.cell) : ''}</div>`;
+            <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' : ''}</div>`;
             const badges = byClass(popup, 'badge');
             badges.forEach((badge, level) => {
                 badge.onclick = () => { setLevel(gym.id, level); gym.showLevel(); }

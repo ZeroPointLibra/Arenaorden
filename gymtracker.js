@@ -376,7 +376,7 @@ function compareCells(a, b) {
 
 //////////////// Badge Storage ////////////////
 
-function sanitize(s) { return String(s).replace(/[^0-3]/g, '0'); }
+function sanitize(s) { return String(s).replace(/[^0-4]/g, '0'); }
 function getLevelsString() { return sanitize(storage[storageKey] || storage['gym-levels'] || ''); }
 function setLevelsString(s) { storage[storageKey] = sanitize(s); updateShare(); }
 
@@ -389,9 +389,9 @@ function setLevel(i, level) {
     setLevelsString(s.substr(0, i) + level + s.substr(i + 1));
     updateSums();
 }
-function getLevel(i) { return getLevelsString()[i] & 3; }
+function getLevel(i) { return getLevelsString()[i]; }
 function incLevel(i) {
-    const level = (getLevel(i) + 1) % 4;
+    const level = (getLevel(i) + 1) % 5;
     setLevel(i, level);
     return level;
 }

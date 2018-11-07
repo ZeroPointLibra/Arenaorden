@@ -116,6 +116,7 @@ function makeList() {
                 <img src="gym1.png" class="badge" width="36" height="48">
                 <img src="gym2.png" class="badge" width="36" height="48">
                 <img src="gym3.png" class="badge" width="36" height="48">
+                <img src="gym4.png" class="badge" width="36" height="48">
                 <br>
             <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' + cellName(gym.cell) : ''}</div>`;
             const badges = byClass(popup, 'badge');

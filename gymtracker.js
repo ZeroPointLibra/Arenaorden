@@ -27,7 +27,7 @@ let storage = {}; try {storage = localStorage} catch(e) {}; // for testing in pr
 
 let refreshMap = null;
 
-const {gyms, city} = getGyms();
+const {gyms, city, cells} = getGyms();
 
 const storageKey = city + ':gym-levels';
 const storageKeyOld = city + ':gym-levels-old';
@@ -75,6 +75,11 @@ function keyToToken(key) {
     return token.replace(/0+$/, '');        // trim trailing zeroes
 }
 
+function cellName(cell) {
+    const token = cell.toHilbertQuadkey ? keyToToken(cell.toHilbertQuadkey()) : cell;
+    return cells && cells[token] || token;
+}
+
 // add divs for each gym
 function makeList() {
     for (const gym of gyms) {
@@ -88,6 +93,7 @@ function makeList() {
                 <a href="https://www.google.com/maps/?q=${gym.location}">${gym.address || 'map'}</a>
                 ${gym.park ? '<br>' : ''}
                 ${typeof gym.park == 'string' ? '[<a href="http://www.openstreetmap.org/' + gym.park + '">EX</a>]' : ''}
+                ${gym.park ? cellName(gym.cell) : ''}
             </div>${gym.exraid ? '<a href="md-exraids.html"><img src="exraid.png" class="exbadge"></a>' : ''}`;
         gym.showLevel = () => {
             gym.badge.src = `gym${gym.levelEx}.png`;
@@ -111,7 +117,7 @@ function makeList() {
                 <img src="gym${gym.park ? 6 : 2}.png" class="badge" width="36" height="48">
                 <img src="gym${gym.park ? 7 : 3}.png" class="badge" width="36" height="48">
                 <br>
-            <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' : ''}</div>`;
+            <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' + cellName(gym.cell) : ''}</div>`;
             const badges = byClass(popup, 'badge');
             badges.forEach((badge, level) => {
                 badge.onclick = () => { setLevel(gym.id, level); gym.showLevel(); }
@@ -189,8 +195,25 @@ function makeMap() {
             if (shape === "polyline") vertices.push(vertices[0]);
             const poly = L[shape](vertices,
                 Object.assign({color: 'blue', opacity: 0.3, weight: 2, fillOpacity: 0.0}, style));
+            if (showNames && cells) poly.bindTooltip(cellName(cell));
+            poly.addTo(map);
         }
 
+        // add cells spiraling outward
+        let cell = S2.S2Cell.FromLatLng(bounds.getCenter(), level);
+        let steps = 1;
+        let direction = 0;
+        do {
+            for (let i = 0; i < 2; i++) { 
+                for (let i = 0; i < steps; i++) {
+                    addPoly(cell);
+                    cell = cell.getNeighbors()[direction % 4];
+                }
+                direction++;
+            }
+            steps++;
+        } while (steps < count);
+    }
 
     showS2Cells(13, {color: '#999'});
     showS2Cells(12, {color: 'blue'}, true);
@@ -267,6 +290,10 @@ function showByLevel(level) {
     else history.replaceState(null, "By Level", "#level");
 }
 
+function showByExraid() {
+    showList(compareCells, null, gym => gym.exraid || gym.park);
+    history.replaceState(null, "By Exraid", "#exraid");
+}
 
 function showAsMap() {
     const mapContent = $('map').children.length;
@@ -338,6 +365,13 @@ function compareLevels(a, b) {
     return compareDistricts(a, b);
 }
 
+function compareCells(a, b) {
+    if (a.cell === b.cell) return compareLevels(a, b);
+    const [, na, sa] = cellName(a.cell).match(/([0-9]+)(.*)$/);
+    const [, nb, sb] = cellName(b.cell).match(/([0-9]+)(.*)$/);
+    if (na !== nb) return parseInt(na) - parseInt(nb);
+    return sa.localeCompare(sb);
+}
 
 //////////////// Badge Storage ////////////////
 
@@ -366,9 +400,10 @@ function incLevel(i) {
 // Add id to raw gym data and filter deleted gyms
 // also add level accessor
 function getGyms() {
-    const {city, gyms} = gymData();
+    const {city, gyms, cells} = gymData();
     return {
         city: city,
+        cells: cells,
         gyms: gyms.map((gym, index) => Object.assign({
                 id: index,          // gym's index in storage string
                 cell: keyToToken(S2.latLngToKey(gym.location[0], gym.location[1], 13)),

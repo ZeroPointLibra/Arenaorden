@@ -409,6 +409,7 @@ function getGyms() {
                 id: index,          // gym's index in storage string
                 cell: keyToToken(S2.latLngToKey(gym.location[0], gym.location[1], 13)),
                 get level() { return getLevel(index) },
+                get levelEx() { return getLevel(index) + ((gym.exraid || gym.park) ? 4 : 0)},
             }, gym))
             .filter(({deleted}) => !deleted),
     };

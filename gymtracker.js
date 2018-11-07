@@ -165,7 +165,7 @@ function makeMap() {
 
     // add gym markers
     // level 0-3 are regular gyms, 4-7 exraid gyms
-    const icons = [0,1,2,3,4].map(level => L.icon({
+const icons = [0,1,2,3,4,5,6,7,8,9].map(level => L.icon({
         iconUrl: `gym${level}.png`,
         iconSize: [36, 48],
         iconAnchor: [18, 42],

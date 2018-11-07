@@ -32,10 +32,6 @@ const {gyms, city} = getGyms();
 const storageKey = city + ':gym-levels';
 const storageKeyOld = city + ':gym-levels-old';
 
-function reload() {
-    location.reload();
-    };
-
 (function start() {
     updateSums();
     if (location.search) {
@@ -49,40 +45,90 @@ function reload() {
     makeList();
     updateShare();
     switch (location.hash) {
-        case '#name': showByName(); break; 
         case '#map': showAsMap(); break; 
         case '#district': showByDistrict(); break; 
         case '#level': showByLevel(); break; 
+        case '#exraid': showByExraid(); break; 
+        default: showByName();
     }
 })();
+
+function keyToToken(key) {
+    // this function is missing from S2 JavaScript lib
+    // because it uses HilbertQuadkeys instead of 64 bit integers
+    const [face, quads] = (key+'20').split('/');    // need to append 1 bit, not quite sure why
+    // we start with 3 bits for the face
+    let bits = +face;
+    let n = 3;
+    let token = '';
+    // assemble token one hex digit at a time
+    for (let i = 0; i < quads.length; i++) {
+      bits = bits << 2 | quads[i];          // next 2 bits
+      n += 2;
+      if (n >= 4) {
+        const digit = bits >> (n-4);        // upper 4 bits
+        token += digit.toString(16);
+        bits = bits & ~(digit << (n-4));    // clear out
+        n -= 4;
+      }
+    }
+    return token.replace(/0+$/, '');        // trim trailing zeroes
+}
 
 // add divs for each gym
 function makeList() {
     for (const gym of gyms) {
+        // div for text list
         gym.div = document.createElement('div');
         gym.div.className = gym.exraid ? 'item exraid' : 'item';
         gym.div.innerHTML = `
-            <img src="gym${gym.level}.png" class="badge" width="36" height="48">
-            <div><b>${gym.name}</b>
-                ${typeof gym.park == 'string' ? '(<a href="http://www.openstreetmap.org/' + gym.park + '">EX</a>)' : ''}<br>
+            <img src="gym${gym.levelEx}.png" class="badge" width="36" height="48">
+            <div><b>${gym.name}</b><br>
                 ${gym.district ? gym.district+',' : ''}
                 <a href="https://www.google.com/maps/?q=${gym.location}">${gym.address || 'map'}</a>
-            </div>${gym.exraid ? '<img src="exraid.png" class="exbadge">' : ''}`;
-        const badge = byClass(gym.div, 'badge')[0];
-        badge.onclick = () => {
+                ${gym.park ? '<br>' : ''}
+                ${typeof gym.park == 'string' ? '[<a href="http://www.openstreetmap.org/' + gym.park + '">EX</a>]' : ''}
+                ${gym.park ? cellName(gym.cell) : ''}
+            </div>${gym.exraid ? '<a href="md-exraids.html"><img src="exraid.png" class="exbadge"></a>' : ''}`;
+        gym.showLevel = () => {
+            gym.badge.src = `gym${gym.levelEx}.png`;
+            if (gym.updateMarker) gym.updateMarker(gym.levelEx);   // update map marker
+            if (gym.updatePopup) gym.updatePopup(gym.level); // update marker popup
+            
+        }
+        gym.badge = byClass(gym.div, 'badge')[0];
+        gym.badge.onclick = () => {
             incLevel(gym.id);
-            badge.src = `gym${gym.level}.png`;
-            if (gym.setMarker) gym.setMarker(gym.level);   // update map marker
+            gym.showLevel();
         };
+        // div for map popup
+        gym.popup = (marker) => {
+            marker.closeTooltip();
+            const popup = document.createElement('div');
+            popup.className = 'item';
+            popup.innerHTML = `
+                <img src="gym${gym.park ? 4 : 0}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 5 : 1}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 6 : 2}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 7 : 3}.png" class="badge" width="36" height="48">
+                <br>
+            <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' + cellName(gym.cell) : ''}</div>`;
+            const badges = byClass(popup, 'badge');
+            badges.forEach((badge, level) => {
+                badge.onclick = () => { setLevel(gym.id, level); gym.showLevel(); }
+            });
+            gym.updatePopup = (level) => badges.forEach((each,i) => each.className = level === i ? 'badge-selected' : 'badge');
+            gym.showLevel();
+            return popup;
+        }
     }
 }
 
-
 // leaflet.js map
-function makeMap(ex) {
+function makeMap() {
 
-    // center map on higher-level gyms
-    function weightedCenter(weights = [1, 4, 16, 64]) {
+    // center map on user's gyms
+    function weightedCenter(weights = [0.0001, 1, 2, 4]) {
         let center = [0, 0],
             count = 0;
         for (const gym of gyms) {
@@ -102,42 +148,57 @@ function makeMap(ex) {
         fullscreenControl: true,
     });
     // Please get your own token at https://www.mapbox.com/signup/ It's free.
-    const mapboxToken = 'pk.eyJ1IjoiemVyb3BvaW50bGlicmEiLCJhIjoiY2pjYWlxd2VnMDhoajMzcDZtYmgxeGloeCJ9.tjcCHRX_1aOLaeKG_9ZXBQ';
+    const mapboxToken = '';
     // For testing only, you could use the OSM tile server instead:
     // L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    L.tileLayer(`https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=${mapboxToken}`, {
+    L.tileLayer(`https://api.tiles.mapbox.com/v4/mapbox.pirates/{z}/{x}/{y}.png?access_token=${mapboxToken}`, {
         attribution: '© <a href="http://openstreetmap.org">OpenStreetMap</a> | © <a href="http://mapbox.com">Mapbox</a>',
-        minZoom: 10,
+        minZoom: 12,
         maxZoom: 17,
     }).addTo(map);
 
     // add gym markers
-    // level 0-4 are regular gyms, 5-9 exraid gyms
-    const icons = [0,1,2,3,4].map(level => L.icon({
+    // level 0-3 are regular gyms, 4-7 exraid gyms
+    const icons = [0,1,2,3,4,5,6,7].map(level => L.icon({
         iconUrl: `gym${level}.png`,
         iconSize: [36, 48],
         iconAnchor: [18, 42],
-        popupAnchor: [18, 6],
+        popupAnchor: [0, -30],
         shadowUrl: 'gym_.png',
         shadowSize: [36, 48],
         shadowAnchor: [18, 35],
     }));
     for (const gym of gyms) {
         const loc = L.latLng(gym.location);
-        const marker = L.marker(loc, {icon: icons[gym.level], riseOnHover: true});
-        const id = S2.latLngToKey(loc.lat, loc.lng, 13).slice(-2).split('').reduce((s, n) => +s * 4 + +n);
-        marker.bindTooltip(`${String.fromCodePoint(0x24B6 + id)} ${gym.name}`);
-        if (ex==1){
-            if (gym.exraid || gym.park){
-                marker.addTo(map);
-                }
-        } else {
-            marker.addTo(map);
-            }
-        gym.setMarker = lv => marker.setIcon(icons[lv]);    // used in makeList()
+        const marker = L.marker(loc, {icon: icons[gym.levelEx], riseOnHover: true});
+        marker.bindTooltip(`${gym.name}${gym.park ? ' [EX] ' + cellName(gym.cell) : ''}`);
+        marker.bindPopup(gym.popup);
+        marker.addTo(map);
+        gym.updateMarker = lv => marker.setIcon(icons[lv]);    // used in makeList()
     }
-    
-    
+
+    // Show S2 cells  
+    function showS2Cells(level, style, showNames) {
+        // we just make a grid around the center cell
+        // count is a guess based on S2 cell size ... better use a S2RegionCoverer
+        const size = L.CRS.Earth.distance(bounds.getSouthWest(), bounds.getNorthEast()) / 10000 + 1|0;
+        const count = 2 ** level * size >> 10;
+
+        function addPoly(cell) {
+            const shape = showNames ? "polygon" : "polyline";
+            const vertices = cell.getCornerLatLngs();
+            if (shape === "polyline") vertices.push(vertices[0]);
+            const poly = L[shape](vertices,
+                Object.assign({color: 'blue', opacity: 0.3, weight: 2, fillOpacity: 0.0}, style));
+        }
+
+
+    showS2Cells(13, {color: '#999'});
+    showS2Cells(12, {color: 'blue'}, true);
+    // showS2Cells(11, {color: 'green', weight: 3});
+    showS2Cells(10, {color: 'red'});
+    // showS2Cells( 9, {color: 'yellow', weight: 16});
+   
     // used in showAsMap()
     refreshMap = _ => L.Util.requestAnimFrame(map.invalidateSize, map, !1, map._container);
 }
@@ -168,10 +229,10 @@ function deleteListItems() {
 }
 
 function updateSums() {
-    const sums = [0, 0, 0, 0, 0];
+    const sums = [0, 0, 0, 0];
     for (const gym of gyms)
         sums[gym.level]++;
-    for (let i = 0; i < 5; i++)
+    for (let i = 0; i < 4; i++)
         $(`sum${i}`).innerText = sums[i];
     $(`sum`).innerText = gyms.length;
 }
@@ -209,9 +270,8 @@ function showByLevel(level) {
 
 
 function showAsMap() {
-    const ex = 0;
     const mapContent = $('map').children.length;
-    if (!mapContent) makeMap(ex);
+    if (!mapContent) makeMap();
     show(['map']);
     refreshMap();
     history.replaceState(null, "Map", "#map");
@@ -279,14 +339,10 @@ function compareLevels(a, b) {
     return compareDistricts(a, b);
 }
 
-function compareExraid(a, b) {
-    if (a.exraid !== b.exraid) return !a.exraid - !b.exraid;
-    return compareLevels(a, b);
-}
 
 //////////////// Badge Storage ////////////////
 
-function sanitize(s) { return String(s).replace(/[^0-4]/g, '0'); }
+function sanitize(s) { return String(s).replace(/[^0-3]/g, '0'); }
 function getLevelsString() { return sanitize(storage[storageKey] || storage['gym-levels'] || ''); }
 function setLevelsString(s) { storage[storageKey] = sanitize(s); updateShare(); }
 
@@ -297,13 +353,12 @@ function setLevel(i, level) {
     let s = getLevelsString();
     while (s.length <= i) s += '0';
     setLevelsString(s.substr(0, i) + level + s.substr(i + 1));
-}
-
-function getLevel(i) { return +getLevelsString()[i]; }
-function incLevel(i) {
-    const level = (getLevel(i) + 1) % 5;
-    setLevel(i, level);
     updateSums();
+}
+function getLevel(i) { return getLevelsString()[i] & 3; }
+function incLevel(i) {
+    const level = (getLevel(i) + 1) % 4;
+    setLevel(i, level);
     return level;
 }
 
@@ -317,7 +372,9 @@ function getGyms() {
         city: city,
         gyms: gyms.map((gym, index) => Object.assign({
                 id: index,          // gym's index in storage string
+                cell: keyToToken(S2.latLngToKey(gym.location[0], gym.location[1], 13)),
                 get level() { return getLevel(index) },
+                get levelEx() { return getLevel(index) + ((gym.exraid || gym.park) ? 4 : 0)},
             }, gym))
             .filter(({deleted}) => !deleted),
     };

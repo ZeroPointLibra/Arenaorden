@@ -112,11 +112,10 @@ function makeList() {
             const popup = document.createElement('div');
             popup.className = 'item';
             popup.innerHTML = `
-                <img src="gym${gym.park ? 5 : 0}.png" class="badge" width="36" height="48">
-                <img src="gym${gym.park ? 6 : 1}.png" class="badge" width="36" height="48">
-                <img src="gym${gym.park ? 7 : 2}.png" class="badge" width="36" height="48">
-                <img src="gym${gym.park ? 8 : 3}.png" class="badge" width="36" height="48">
-                <img src="gym${gym.park ? 9 : 4}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 4 : 0}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 5 : 1}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 6 : 2}.png" class="badge" width="36" height="48">
+                <img src="gym${gym.park ? 7 : 3}.png" class="badge" width="36" height="48">
                 <br>
             <div><b>${gym.name}</b>${gym.park ? '<br>[EX] ' + cellName(gym.cell) : ''}</div>`;
             const badges = byClass(popup, 'badge');
@@ -164,8 +163,8 @@ function makeMap() {
     }).addTo(map);
 
     // add gym markers
-    // level 0-4 are regular gyms, 5-9 exraid gyms
-    const icons = [0,1,2,3,4,5,6,7,8,9].map(level => L.icon({
+    // level 0-3 are regular gyms, 4-7 exraid gyms
+    const icons = [0,1,2,3,4,5,6,7].map(level => L.icon({
         iconUrl: `gym${level}.png`,
         iconSize: [36, 48],
         iconAnchor: [18, 42],
@@ -252,10 +251,10 @@ function deleteListItems() {
 }
 
 function updateSums() {
-    const sums = [0, 0, 0, 0, 0];
+    const sums = [0, 0, 0, 0];
     for (const gym of gyms)
         sums[gym.level]++;
-    for (let i = 0; i < 5; i++)
+    for (let i = 0; i < 4; i++)
         $(`sum${i}`).innerText = sums[i];
     $(`sum`).innerText = gyms.length;
 }
